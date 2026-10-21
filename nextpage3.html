@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You're Registered | Thereal's DanceFlow</title>
+    <link rel="stylesheet" href="Thereal's.css">
+</head>
+<body class="flow-page page-complete">
+    <main class="flow-card flow-card-complete">
+        <a class="flow-brand" href="ideaweb.html"><span aria-hidden="true">✦</span> Thereal's DanceFlow</a>
+        <div class="dancing-cartoon" role="img" aria-label="A dancer celebrating">🕺🏽</div>
+        <p class="eyebrow eyebrow-dark">You're on the list!</p>
+        <h1 class="flow-title">See you <em>on the floor.</em></h1>
+        <p id="registration-thanks" class="flow-description">Your registration has been saved. See you there!</p>
+        <p class="flow-note">Dance battles · 1 October 2026 · East Park Mall Arena</p>
+        <a class="button flow-button" href="ideaweb.html#categories">Explore dance categories <span aria-hidden="true">↗</span></a>
+        <a class="flow-back" href="ideaweb.html">← Back to DanceFlow</a>
+    </main>
+    <script>
+        const registration = sessionStorage.getItem("danceflow-registration");
+        if (registration) {
+            try {
+                const dancer = JSON.parse(registration);
+                if (dancer.name && dancer.category) {
+                    document.querySelector("#registration-thanks").textContent =
+                        `Thank you, ${dancer.name}! You're registered for ${dancer.category}. See you there!`;
+                }
+            } catch (error) {
+                console.error("Could not read the saved registration confirmation.", error);
+            } finally {
+                sessionStorage.removeItem("danceflow-registration");
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register for DanceFlow</title>
+    <link rel="stylesheet" href="Thereal's.css">
+</head>
+<body class="flow-page page-registration">
+    <main class="flow-card">
+        <a class="flow-brand" href="ideaweb.html"><span aria-hidden="true">✦</span> Thereal's DanceFlow</a>
+        <p class="eyebrow eyebrow-dark">Step into the spotlight</p>
+        <h1 class="flow-title">Find your <em>flow.</em></h1>
+        <p class="flow-description">Sign up for the dance battles. Choose a category and tell us how to reach you.</p>
+
+        <form id="registration-form">
+            <div class="flow-field">
+                <label for="dancer-name">Your name</label>
+                <input id="dancer-name" name="name" type="text" maxlength="100" autocomplete="name" placeholder="First and last name" required>
+            </div>
+            <div class="flow-field">
+                <label for="dancer-email">Email address</label>
+                <input id="dancer-email" name="email" type="email" maxlength="254" autocomplete="email" placeholder="you@example.com" required>
+            </div>
+            <div class="flow-field">
+                <label for="dance-category">Dance category</label>
+                <select id="dance-category" name="category" required>
+                    <option value="" disabled selected>Choose your category</option>
+                    <option>Memphis jookin</option>
+                    <option>Animation</option>
+                    <option>Party dance</option>
+                    <option>Cramp</option>
+                    <option>Other</option>
+                </select>
+            </div>
+            <div class="flow-field" id="other-category-field" hidden>
+                <label for="other-category">Your dance category</label>
+                <input id="other-category" name="category_details" type="text" maxlength="100" placeholder="Enter your category">
+            </div>
+            <div class="flow-field">
+                <label for="dance-experience">Dance experience <span class="optional-label">(optional)</span></label>
+                <textarea id="dance-experience" name="experience" maxlength="2000" rows="3" placeholder="Tell us a little about your dance experience..."></textarea>
+            </div>
+            <p id="registration-error" class="form-message" role="alert" hidden></p>
+            <button class="button flow-button" type="submit">Register <span aria-hidden="true">↗</span></button>
+        </form>
+        <a class="flow-back" href="ideaweb.html">← Back to DanceFlow</a>
+    </main>
+
+    <script>
+        const form = document.querySelector("#registration-form");
+        const categorySelect = document.querySelector("#dance-category");
+        const otherCategoryField = document.querySelector("#other-category-field");
+        const otherCategoryInput = document.querySelector("#other-category");
+        const errorMessage = document.querySelector("#registration-error");
+        const params = new URLSearchParams(window.location.search);
+        const requestedCategory = params.get("category");
+        const allowedCategories = [...categorySelect.options].map((option) => option.value || option.textContent);
+
+        if (requestedCategory && allowedCategories.includes(requestedCategory)) {
+            categorySelect.value = requestedCategory;
+        }
+
+        function updateOtherCategory() {
+            const isOther = categorySelect.value === "Other";
+            otherCategoryField.hidden = !isOther;
+            otherCategoryInput.required = isOther;
+        }
+
+        categorySelect.addEventListener("change", updateOtherCategory);
+        updateOtherCategory();
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            errorMessage.hidden = true;
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = "Saving registration...";
+
+            const formData = new FormData(form);
+            const registration = Object.fromEntries(formData.entries());
+            try {
+                const response = await fetch("/api/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(registration)
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || "Registration could not be saved.");
+
+                try {
+                    sessionStorage.setItem("danceflow-registration", JSON.stringify({
+                        name: registration.name,
+                        category: registration.category === "Other"
+                            ? registration.category_details
+                            : registration.category
+                    }));
+                } catch (storageError) {
+                    console.warn("Personalized registration confirmation is unavailable.", storageError);
+                }
+                window.location.href = "nextpage3.html";
+            } catch (error) {
+                errorMessage.textContent = error instanceof TypeError
+                    ? "Could not connect to the registration service. Check your connection and try again."
+                    : error.message;
+                errorMessage.hidden = false;
+                submitButton.disabled = false;
+                submitButton.innerHTML = 'Register <span aria-hidden="true">↗</span>';
+            }
+        });
+    </script>
+</body>
+</html>
